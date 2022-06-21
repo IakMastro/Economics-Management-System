@@ -89,7 +89,3 @@ function CategoryForm({ category: initialCategory, onCancel }: CategoryFormProps
 }
 
 export default CategoryForm;
-
-function dispatch(arg0: any) {
-  throw new Error("Function not implemented.");
-}
