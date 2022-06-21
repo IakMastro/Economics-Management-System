@@ -1,0 +1,79 @@
+version: '3.9'
+
+services:
+  app:
+    build: app
+    container_name: economics-app
+    hostname: app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./app:/app
+    networks:
+      - economicsnet
+
+  middleware:
+    build: middleware
+    container_name: economics-middleware
+    hostname: middleware
+    ports:
+      - 5000:5000
+    volumes:
+      - ./middleware:/api
+    networks:
+      - economicsnet
+
+  api:
+    build: api
+    container_name: economics-api
+    hostname: api
+    volumes:
+      - ./api:/api
+    networks:
+      - economicsnet
+
+  sql:
+    build: sql
+    container_name: economics-sql
+    hostname: sql
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: economics
+    volumes:
+      - ./data/sql:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - economicsnet
+
+  mongoexpress:
+    image: mongo-express:0.54.0
+    container_name: economics-mongo-express
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_OPTIONS_EDITORTHEME: "dracula"
+      ME_CONFIG_MONDODB_URL: mongodb://dbuser:dbpass@mongo:27017
+      ME_CONFIG_ENABLE_ADMIN: 'true'
+      ME_CONFIG_MONGODB_ADMINUSERNAME: dbuser
+      ME_CONFIG_MONGODB_ADMINPASSWORD: dbpass
+    depends_on:
+      - mongo
+    networks:
+      - economicsnet
+
+  mongo:
+    build: mongo
+    container_name: economics-mongo
+    hostname: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: dbuser
+      MONGO_INITDB_ROOT_PASSWORD: dbpass
+      MONGO_INITDB_DATABASE: economics
+    volumes:
+      - ./data/mongo:/data/db
+    networks:
+      - economicsnet
+
+networks:
+  economicsnet:
+    name: economicsnet
